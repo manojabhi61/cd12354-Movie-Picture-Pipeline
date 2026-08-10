@@ -29,19 +29,14 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           ECR_REPOSITORY: frontend
           IMAGE_TAG: ${{ github.sha }}
+          REACT_APP_MOVIE_API_URL: http://aacb246ea85cd4cc58a38a6e119f1db6-993626830.us-east-1.elb.amazonaws.com
         run: |
-          docker build \
-            --build-arg REACT_APP_MOVIE_API_URL=http://aacb246ea85cd4cc58a38a6e119f1db6-993626830.us-east-1.elb.amazonaws.com \
-  	    -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
-            ./starter/frontend
-
+          docker build --build-arg REACT_APP_MOVIE_API_URL="$REACT_APP_MOVIE_API_URL" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./starter/frontend
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Configure kubectl
         run: |
-          aws eks update-kubeconfig \
-            --region us-east-1 \
-            --name cluster
+          aws eks update-kubeconfig --region us-east-1 --name cluster
 
       - name: Install Kustomize
         run: |
