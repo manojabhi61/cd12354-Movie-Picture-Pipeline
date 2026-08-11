@@ -4,10 +4,60 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  frontend-cd:
+  lint:
     runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: starter/frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: starter/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: starter/frontend
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: npm
+          cache-dependency-path: starter/frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test -- --watchAll=false
+
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
 
     steps:
       - name: Checkout code
@@ -31,12 +81,18 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}
           REACT_APP_MOVIE_API_URL: http://aacb246ea85cd4cc58a38a6e119f1db6-993626830.us-east-1.elb.amazonaws.com
         run: |
-          docker build --build-arg REACT_APP_MOVIE_API_URL="$REACT_APP_MOVIE_API_URL" -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./starter/frontend
+          docker build \
+            --build-arg REACT_APP_MOVIE_API_URL="$REACT_APP_MOVIE_API_URL" \
+            -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG \
+            ./starter/frontend
+
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
       - name: Configure kubectl
         run: |
-          aws eks update-kubeconfig --region us-east-1 --name cluster
+          aws eks update-kubeconfig \
+            --region us-east-1 \
+            --name cluster
 
       - name: Install Kustomize
         run: |
