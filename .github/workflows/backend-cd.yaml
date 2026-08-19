@@ -30,10 +30,13 @@ jobs:
         run: pip install pipenv
 
       - name: Install dependencies
-        run: pipenv install --dev
+  run: pipenv install --dev
 
-      - name: Run lint
-        run: pipenv run lint
+- name: Install pytest
+  run: pipenv run pip install pytest==7.2.1
+
+- name: Run tests
+  run: pipenv run test
 
   test:
     runs-on: ubuntu-latest
