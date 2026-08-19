@@ -1,4 +1,4 @@
-name: Frontend CI
+name: Frontend Continuous Integration
 
 on:
   push:
@@ -80,5 +80,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build frontend
-        run: npm run build
+      - name: Build frontend Docker image
+      run: docker build -t frontend-app:latest .
