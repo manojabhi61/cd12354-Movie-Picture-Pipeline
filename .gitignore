@@ -6,3 +6,9 @@ node_modules
 credentials
 .pytest_cache
 starter/frontend/.env
+# AWS / Kubernetes generated files
+aws-auth-backup.yaml
+setup/aws-iam-authenticator
+
+# Terraform generated files
+setup/terraform/tfplan
